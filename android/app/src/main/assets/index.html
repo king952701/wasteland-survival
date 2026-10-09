@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>末世废土</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0c0a08;
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; color: #e8e0d2; }
+#game { display: block; position: fixed; inset: 0; }
+#hud { position: fixed; inset: 0; pointer-events: none; }
+#hud button { pointer-events: auto; }
+
+#stats { position: absolute; left: 12px; top: 12px; width: 220px; }
+.bar { position: relative; height: 18px; background: #2a241d; border: 1px solid #4a4034; border-radius: 3px; margin-bottom: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: #c0392b; transition: width .15s; }
+.bar.stam i { background: #2e86c1; }
+.bar.hun i { background: #b9770e; }
+.bar span { position: absolute; inset: 0; font-size: 12px; line-height: 18px; text-align: center; text-shadow: 0 1px 2px #000; }
+#lv { font-size: 12px; color: #bdb2a0; text-shadow: 0 1px 2px #000; margin-top: 2px; }
+
+#clock { position: absolute; left: 50%; top: 10px; transform: translateX(-50%);
+  font-size: 14px; text-shadow: 0 1px 3px #000; background: rgba(0,0,0,.35); padding: 4px 12px; border-radius: 4px; }
+#pos { position: absolute; right: 12px; top: 12px; font-size: 12px; color: #bdb2a0; text-shadow: 0 1px 2px #000; text-align: right; }
+
+#toast { position: absolute; left: 12px; bottom: 96px; font-size: 13px; max-width: 60%; }
+#toast div { background: rgba(0,0,0,.55); margin-top: 4px; padding: 4px 10px; border-radius: 4px;
+  border-left: 3px solid #c9a227; }
+
+#hotbar { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 5px; }
+.slot { width: 46px; height: 46px; background: rgba(30,26,20,.85); border: 1px solid #574c3d; border-radius: 5px;
+  position: relative; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.slot.empty { opacity: .35; }
+.slot em { position: absolute; right: 3px; bottom: 1px; font-size: 11px; font-style: normal; color: #e8e0d2; text-shadow: 0 1px 2px #000; }
+
+#btns { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+#btns button { background: rgba(35,30,24,.9); color: #e8e0d2; border: 1px solid #574c3d;
+  border-radius: 5px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+#btns button:hover { background: #4a4034; }
+
+#actbar { display: none; position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%);
+  width: 240px; height: 16px; background: #2a241d; border: 1px solid #574c3d; border-radius: 8px; overflow: hidden; }
+#actbar i { display: block; height: 100%; background: #c9a227; width: 0; }
+#actbar span { position: absolute; inset: 0; font-size: 11px; line-height: 16px; text-align: center; text-shadow: 0 1px 2px #000; }
+
+#panel { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.55); pointer-events: auto;
+  display: none; align-items: center; justify-content: center; }
+.pw { width: min(720px, 94vw); max-height: 82vh; background: #1c1813; border: 1px solid #574c3d;
+  border-radius: 8px; display: flex; flex-direction: column; }
+.ph { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #3a3228; }
+.ph b { font-size: 16px; }
+.ph button { background: none; border: none; color: #bdb2a0; font-size: 18px; cursor: pointer; }
+.pb { padding: 12px 14px; overflow-y: auto; }
+
+.eq { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.es { flex: 1 1 100px; background: #262019; border: 1px solid #3a3228; border-radius: 5px; padding: 6px; font-size: 12px; }
+.es span { display: block; color: #8d8375; font-size: 11px; }
+.es i { color: #6d6459; font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.cell { aspect-ratio: 1; background: #262019; border: 1px solid #3a3228; border-radius: 5px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+.cell.empty { opacity: .3; cursor: default; }
+.cell span { font-size: 22px; }
+.cell em { font-size: 10px; font-style: normal; color: #a89c8b; }
+.cell u { position: absolute; right: 3px; bottom: 2px; font-size: 10px; text-decoration: none; color: #e8e0d2; }
+.cell .af { position: absolute; left: 3px; top: 2px; font-size: 9px; font-style: normal; color: #9b7bd4; }
+
+.recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 7px; }
+.rec { background: #262019; border: 1px solid #3a3228; border-radius: 6px; padding: 8px; cursor: pointer; }
+.rec.no { opacity: .5; }
+.rec b { font-size: 13px; }
+.rec .cost { font-size: 11px; margin-top: 3px; }
+.rec .cost .ok { color: #7fbf7f; }
+.rec .cost .lack { color: #c96b5e; }
+.rec .st { font-size: 10px; color: #8d8375; margin-top: 3px; }
+.tip { font-size: 12px; color: #8d8375; margin-top: 10px; }
+.help p { font-size: 13px; line-height: 1.7; margin: 6px 0; }
+.dim { color: #8d8375; }
+
+#dead, #start { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.8); pointer-events: auto; text-align: center; }
+#dead h2 { color: #c0392b; }
+#start h1 { font-size: 34px; letter-spacing: 4px; margin: 0 0 8px; color: #c9a227; }
+#start p { color: #bdb2a0; font-size: 13px; margin: 6px 0; }
+#start button, #dead button { margin: 10px 6px; padding: 10px 22px; font-size: 15px; cursor: pointer;
+  background: #3a3228; color: #e8e0d2; border: 1px solid #574c3d; border-radius: 5px; }
+#start button:hover, #dead button:hover { background: #574c3d; }
+
+#stick { display: none; position: absolute; left: 18px; bottom: 18px; width: 110px; height: 110px;
+  border-radius: 50%; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.18); pointer-events: auto; }
+#stick i { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; transform: translate(-20px,-20px);
+  border-radius: 50%; background: rgba(255,255,255,.28); display: block; }
+#tbtns { display: none; position: absolute; right: 16px; bottom: 100px; gap: 8px; flex-direction: column; }
+#tbtns button { width: 62px; height: 62px; border-radius: 50%; font-size: 20px;
+  background: rgba(60,52,42,.85); color: #e8e0d2; border: 1px solid #574c3d; pointer-events: auto; }
+#tbtns button.on { background: #c9a227; color: #1c1813; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<script src="src/data.js"></script>
+<script src="src/world.js"></script>
+<script src="src/game.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/render.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

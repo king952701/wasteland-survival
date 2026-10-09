@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 奶牛头像图标（自适应图标画布 108dp，安全区 66dp） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 耳朵 -->
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M30,26 a10,10 0 1,0 0,20 a10,10 0 1,0 0,-20" />
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M78,26 a10,10 0 1,0 0,20 a10,10 0 1,0 0,-20" />
+
+    <!-- 头 -->
+    <path
+        android:fillColor="#F7F1E3"
+        android:pathData="M54,31 a27,27 0 1,0 0,54 a27,27 0 1,0 0,-54" />
+
+    <!-- 花纹 -->
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M36,42 a8,8 0 1,0 0,16 a8,8 0 1,0 0,-16" />
+
+    <!-- 眼睛 -->
+    <path
+        android:fillColor="#22243A"
+        android:pathData="M44,47.5 a4.5,4.5 0 1,0 0,9 a4.5,4.5 0 1,0 0,-9" />
+    <path
+        android:fillColor="#22243A"
+        android:pathData="M64,47.5 a4.5,4.5 0 1,0 0,9 a4.5,4.5 0 1,0 0,-9" />
+
+    <!-- 鼻子 -->
+    <path
+        android:fillColor="#F2A0A0"
+        android:pathData="M54,63 a15,11 0 1,0 0,22 a15,11 0 1,0 0,-22" />
+    <path
+        android:fillColor="#8E4B52"
+        android:pathData="M48,73.5 a2.5,2.5 0 1,0 0,5 a2.5,2.5 0 1,0 0,-5" />
+    <path
+        android:fillColor="#8E4B52"
+        android:pathData="M60,73.5 a2.5,2.5 0 1,0 0,5 a2.5,2.5 0 1,0 0,-5" />
+
+    <!-- 星星 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,20 l1.6,4.4 4.4,1.6 -4.4,1.6 -1.6,4.4 -1.6,-4.4 -4.4,-1.6 4.4,-1.6z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M90,86 l1.2,3.3 3.3,1.2 -3.3,1.2 -1.2,3.3 -1.2,-3.3 -3.3,-1.2 3.3,-1.2z" />
+</vector>
