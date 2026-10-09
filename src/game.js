@@ -193,16 +193,21 @@ function nearWater() {
 }
 /* 可采集/挖掘的目标格 */
 function findHarvest() {
-  var r = 1, best = null, bd = NUM.REACH;
+  var r = 2, best = null, bd = NUM.REACH;
   for (var oy = -r; oy <= r; oy++) for (var ox = -r; ox <= r; ox++) {
     var x = Math.round(P.x) + ox, y = Math.round(P.y) + oy;
     var kind = null;
     if (P.z === 0) {
       if (W.houseFloor(x, y, 0)) continue;
-      var t = W.tileRaw(x, y);
-      if (t === T.FOREST) kind = 'chop';
-      else if (t === T.RUBBLE) kind = 'scav';
-      else if (t === T.ROCK) kind = 'stone';
+      /* 优先地表资源节点（树、石、草药、废料堆、仙人掌） */
+      var ent = W.contAt(x, y, 0);
+      if (ent && ent.type && ['tree', 'stone', 'herb', 'scrapheap', 'cactus'].indexOf(ent.type) >= 0) kind = ent.type;
+      if (!kind) {
+        var t = W.tileRaw(x, y);
+        if (t === T.FOREST) kind = 'chop';
+        else if (t === T.RUBBLE) kind = 'scav';
+        else if (t === T.ROCK) kind = 'stone';
+      }
     } else {
       var u = W.underAt(x, y, P.z);
       if (u === 0 || u === 2) kind = 'mine';
@@ -255,12 +260,27 @@ function finishAct() {
     invAdd('wood', 2 + Math.floor(Math.random() * 3));
     invAdd('fiber', 1 + Math.floor(Math.random() * 2));
     W.diff.set(a.x + ',' + a.y + ',0', T.GRASS);
+  } else if (a.type === 'tree') {
+    invAdd('wood', 3 + Math.floor(Math.random() * 3));
+    invAdd('fiber', 1 + Math.floor(Math.random() * 2));
+    W.removeEnt(a.x, a.y, 0); W.diff.set(a.x + ',' + a.y + ',0', T.GRASS);
+  } else if (a.type === 'stone') {
+    invAdd('stone', 2 + Math.floor(Math.random() * 3));
+    W.diff.set(a.x + ',' + a.y + ',0', T.GRASS);
+  } else if (a.type === 'herb') {
+    invAdd('plant_fiber', 1 + Math.floor(Math.random() * 2));
+    if (Math.random() < 0.35) invAdd('berry', 1);
+    W.removeEnt(a.x, a.y, 0); W.diff.set(a.x + ',' + a.y + ',0', T.GRASS);
+  } else if (a.type === 'cactus') {
+    invAdd('plant_fiber', 1 + Math.floor(Math.random() * 2));
+    W.removeEnt(a.x, a.y, 0); W.diff.set(a.x + ',' + a.y + ',0', T.SAND);
+  } else if (a.type === 'scrapheap') {
+    invAdd('scrap', 1 + Math.floor(Math.random() * 3));
+    if (Math.random() < 0.45) invAdd('cloth', 1);
+    W.removeEnt(a.x, a.y, 0); W.diff.set(a.x + ',' + a.y + ',0', T.SAND);
   } else if (a.type === 'scav') {
     invAdd('scrap', 1 + Math.floor(Math.random() * 3));
     if (Math.random() < 0.4) invAdd('cloth', 1);
-    W.diff.set(a.x + ',' + a.y + ',0', T.SAND);
-  } else if (a.type === 'stone') {
-    invAdd('stone', 2 + Math.floor(Math.random() * 3));
     W.diff.set(a.x + ',' + a.y + ',0', T.SAND);
   } else if (a.type === 'mine') {
     W.setUnder(a.x, a.y, P.z, 1);

@@ -8,7 +8,7 @@ const path = require('path');
   const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
   await page.goto('file:///D:/moshi/wasteland/index.html?auto=1', { waitUntil: 'load' });
   await page.waitForTimeout(12000);
-  await page.screenshot({ path: 'D:/moshi/wasteland/production/qa/evidence/pc-02-land.png', fullPage: false });
+  await page.screenshot({ path: 'D:/moshi/wasteland/production/qa/evidence/pc-07-land.png', fullPage: false });
   console.log('screenshot ok');
   await browser.close();
 })();

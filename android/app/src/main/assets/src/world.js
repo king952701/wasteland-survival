@@ -23,16 +23,16 @@ var W = {
   genTile: function (x, y) {
     var e = fbm(x / 62, y / 62, this.seed, 4);
     var m = fbm((x + 900) / 46, (y + 900) / 46, this.seed + 77, 3);
-    /* 世界中心隆起：确保出生点附近是大陆 */
+    /* 世界中心隆起：半径 900 的大陆，确保出生点不在孤岛上 */
     var d = Math.hypot(x - NUM.WORLD / 2, y - NUM.WORLD / 2);
-    e += Math.max(0, 1 - d / 220) * 0.32;
+    e += Math.max(0, 1 - d / 900) * 0.28;
     if (e < 0.33) return T.DEEP;
     if (e < 0.385) return T.WATER;
     if (e < 0.44) return T.SAND;
     if (e > 0.715) return T.ROCK;
     if ((x % 96 === 0 || y % 96 === 0) && m > 0.42) return T.ROAD;
-    if (m > 0.63) return T.FOREST;
-    if (m > 0.47) return T.GRASS;
+    if (m > 0.35) return T.FOREST;
+    if (m > 0.18) return T.GRASS;
     return T.RUBBLE;
   },
   tileRaw: function (x, y) {
@@ -74,6 +74,7 @@ var W = {
   genHouses: function (c) {
     var rng = mkRng((c.cx * 73856093 ^ c.cy * 19349663 ^ this.seed) >>> 0);
     var n = NUM.CHUNK, count = rng() < 0.62 ? (rng() < 0.35 ? 2 : 1) : 0;
+    if (count === 0) count = 1; /* 每块至少尝试一幢房子 */
     for (var i = 0; i < count; i++) {
       var w = 5 + Math.floor(rng() * 4), h = 5 + Math.floor(rng() * 4);
       var hx = 2 + Math.floor(rng() * (n - w - 4)), hy = 2 + Math.floor(rng() * (n - h - 4));
@@ -133,6 +134,7 @@ var W = {
       var x = c.cx * n + Math.floor(rng() * n), y = c.cy * n + Math.floor(rng() * n);
       var t = this.genTile(x, y);
       if (t === T.DEEP || t === T.WATER) continue;
+      if (this.houseFloor(x, y, 0)) continue; /* 不要和房屋 footprint 重叠 */
       var pool = t === T.RUBBLE ? ['crate', 'barrel', 'car', 'scrapheap'] : ['barrel', 'crate'];
       c.ents.push({ x: x, y: y, type: pool[Math.floor(rng() * pool.length)], id: 'E' + c.cx + '_' + c.cy + '_' + i });
     }
@@ -143,6 +145,20 @@ var W = {
       if (mt !== T.DEEP && mt !== T.WATER && mt !== T.ROCK) {
         c.ents.push({ x: mx, y: my, type: 'mine_ent', id: 'M' + c.cx + '_' + c.cy });
       }
+    }
+    /* 地表资源节点：树、石、草药、废料堆、仙人掌 */
+    for (var ry = 0; ry < n; ry++) for (var rx = 0; rx < n; rx++) {
+      var tx = c.cx * n + rx, ty = c.cy * n + ry;
+      var tt = c.tiles[ry * n + rx];
+      if (tt === T.DEEP || tt === T.WATER || tt === T.ROCK) continue;
+      if (this.houseFloor(tx, ty, 0)) continue;
+      var kind = null;
+      if (tt === T.FOREST && rng() < 0.26) kind = 'tree';
+      else if (tt === T.GRASS && rng() < 0.022) kind = rng() < 0.45 ? 'stone' : 'herb';
+      else if (tt === T.RUBBLE && rng() < 0.012) kind = 'scrapheap';
+      else if (tt === T.SAND && rng() < 0.04) kind = 'cactus';
+      if (!kind) continue;
+      c.ents.push({ x: tx, y: ty, type: kind, id: 'R' + c.cx + '_' + c.cy + '_' + rx + '_' + ry + '_' + kind });
     }
   },
 
@@ -242,6 +258,21 @@ var W = {
   },
   addBuild: function (x, y, z, t) {
     this.builds.push({ x: x, y: y, z: z, t: t });
+  },
+  removeEnt: function (x, y, z) {
+    if (z === 0) {
+      var cx = Math.floor(x / NUM.CHUNK), cy = Math.floor(y / NUM.CHUNK);
+      var c = this.chunks.get(this.key(cx, cy));
+      if (c) for (var i = 0; i < c.ents.length; i++) {
+        if (c.ents[i].x === x && c.ents[i].y === y) { c.ents.splice(i, 1); return; }
+      }
+    } else {
+      var hf = this.houseFloor(x, y, z);
+      if (hf) for (var k = 0; k < hf.f.conts.length; k++) {
+        var ct = hf.f.conts[k];
+        if (ct.x === x && ct.y === y) { hf.f.conts.splice(k, 1); return; }
+      }
+    }
   },
 
   /* ---------- 通行判定 ---------- */

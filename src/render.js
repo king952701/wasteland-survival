@@ -70,6 +70,14 @@ R.buildTiles = function () {
   }
 };
 
+function grassDeco(ctx, sx, sy, h) {
+  var col = (h % 3 === 0) ? '#c24e7a' : ((h % 3 === 1) ? '#e8c547' : '#6ab04c');
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(sx, sy - 4, 2.5, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(40,80,30,.35)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx - 1, sy - 4); ctx.moveTo(sx, sy); ctx.lineTo(sx + 1, sy - 4); ctx.stroke();
+}
+
 /* 画一个立方体（墙 / 建筑） */
 function drawBox(ctx, sx, sy, hgt, top, left, right) {
   var hw = NUM.TILE_W / 2, hh = NUM.TILE_H / 2;
@@ -119,6 +127,7 @@ R.draw = function () {
           var t = W.tileRaw(x, y);
           var img = this.tiles[t] || this.tiles[T.GRASS];
           ctx.drawImage(img, s.x - NUM.TILE_W / 2, s.y - NUM.TILE_H / 2);
+          if (t === T.GRASS && ((x * 73856093 ^ y * 19349663) % 7) === 0) grassDeco(ctx, s.x, s.y, x + y);
           if (t === T.FOREST) objs.push({ d: x + y, f: function (sx, sy) { ctx.fillStyle = '#2c4a26'; ctx.beginPath(); ctx.arc(sx, sy - 14, 12, 0, 7); ctx.fill(); ctx.fillStyle = '#5b3f27'; ctx.fillRect(sx - 2, sy - 6, 4, 10); }, x: s.x, y: s.y });
         }
       } else {
@@ -190,6 +199,34 @@ R.draw = function () {
 function entSprite(e) {
   return function (sx, sy) {
     var ctx = R.ctx;
+    if (e.type === 'tree') {
+      ctx.fillStyle = '#5c3f1f'; ctx.fillRect(sx - 3, sy - 30, 6, 18);
+      ctx.fillStyle = '#2d6e34'; ctx.beginPath(); ctx.arc(sx, sy - 38, 22, 0, 7); ctx.fill();
+      ctx.fillStyle = '#3e8e46'; ctx.beginPath(); ctx.arc(sx - 8, sy - 44, 14, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx + 9, sy - 34, 12, 0, 7); ctx.fill();
+      return;
+    }
+    if (e.type === 'stone') {
+      ctx.fillStyle = '#777'; ctx.beginPath(); ctx.ellipse(sx, sy - 3, 11, 5, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#999'; ctx.beginPath(); ctx.ellipse(sx - 3, sy - 5, 5, 3, -0.3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#555'; ctx.beginPath(); ctx.ellipse(sx + 3, sy - 2, 4, 2.5, 0.2, 0, 7); ctx.fill();
+      return;
+    }
+    if (e.type === 'herb') {
+      ctx.strokeStyle = '#4caf50'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx - 5, sy - 14); ctx.moveTo(sx, sy); ctx.lineTo(sx + 5, sy - 12); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy - 16); ctx.stroke();
+      ctx.fillStyle = '#e91e63'; ctx.beginPath(); ctx.arc(sx, sy - 16, 3, 0, 7); ctx.fill();
+      return;
+    }
+    if (e.type === 'cactus') {
+      ctx.fillStyle = '#6b8c42'; ctx.fillRect(sx - 5, sy - 26, 10, 22); ctx.fillRect(sx - 10, sy - 18, 6, 5); ctx.fillRect(sx + 4, sy - 22, 6, 5);
+      return;
+    }
+    if (e.type === 'scrapheap') {
+      drawBox(ctx, sx, sy, 16, '#6d5c4a', '#4f4234', '#3f3529');
+      ctx.strokeStyle = '#8c7b63'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx - 8, sy - 8); ctx.lineTo(sx + 8, sy - 4); ctx.stroke();
+      return;
+    }
     if (e.type === 'mine_ent') {
       ctx.fillStyle = '#0b0b0b';
       ctx.beginPath(); ctx.ellipse(sx, sy, 26, 13, 0, 0, 7); ctx.fill();

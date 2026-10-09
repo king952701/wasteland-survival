@@ -1,0 +1,11 @@
+﻿[01:24:43] watching CI...
+[01:24:59] run=37966014128 status=in_progress conclusion= sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:25:15] run=37966014128 status=in_progress conclusion= sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:25:30] run=37966014128 status=in_progress conclusion= sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:25:46] run=37966014128 status=in_progress conclusion= sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:26:01] run=37966014128 status=in_progress conclusion= sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:26:17] run=37966014128 status=completed conclusion=success sha=00e004c2c61951c0d7758d65d616515435169a4f
+[01:26:17] artifact=末世废土-APK
+[01:26:32] APK: C:\Users\沈\Desktop\鏈笘搴熷湡APK\鏈笘搴熷湡-debug.apk
+[01:26:32] APK: C:\Users\沈\Desktop\鏈笘搴熷湡APK\鏈笘搴熷湡-release.apk
+[01:26:32] DONE

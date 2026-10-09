@@ -28,30 +28,42 @@ function newGame(seed) {
 }
 
 function findSpawn() {
-  var rng = mkRng(G.seed + 777), best = null, bestD = 1e9;
-  for (var k = 0; k < 1600; k++) {
-    var x = Math.floor(rng() * NUM.WORLD), y = Math.floor(rng() * NUM.WORLD);
+  var rng = mkRng(G.seed + 777), best = null, bestScore = -1;
+  /* 在大陆中心半径 900 内搜索，避免孤岛 */
+  for (var k = 0; k < 2400; k++) {
+    var ang = rng() * Math.PI * 2, r = Math.sqrt(rng()) * 900;
+    var x = Math.floor(NUM.WORLD / 2 + Math.cos(ang) * r), y = Math.floor(NUM.WORLD / 2 + Math.sin(ang) * r);
     if (!W.walkable(x, y) || W.houseFloor(x, y, 0)) continue;
     var t = W.tileRaw(x, y);
-    if (t !== T.GRASS && t !== T.FOREST && t !== T.RUBBLE && t !== T.ROAD) continue;
+    if (t !== T.GRASS && t !== T.FOREST) continue;
+    /* 检查 7×7 邻域陆地比例，确保不是孤岛 */
+    var land = 0, total = 0;
+    for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++) {
+      total++;
+      if (W.walkable(x + dx, y + dy)) land++;
+    }
+    if (land / total < 0.70) continue;
     var cx = Math.floor(x / NUM.CHUNK), cy = Math.floor(y / NUM.CHUNK);
     W.makeChunk(cx, cy);
-    var d = 1e9;
-    for (var ox = -1; ox <= 1; ox++) for (var oy = -1; oy <= 1; oy++) {
+    /* 加分项：离房屋越近越好；草地/森林额外加分 */
+    var dHouse = 1e9;
+    for (var ox = -2; ox <= 2; ox++) for (var oy = -2; oy <= 2; oy++) {
       var ch = W.chunks.get(W.key(cx + ox, cy + oy));
       if (!ch) continue;
       for (var hi = 0; hi < ch.houses.length; hi++) {
         var hh = ch.houses[hi], wx = (cx + ox) * NUM.CHUNK + hh.x + hh.w / 2, wy = (cy + oy) * NUM.CHUNK + hh.y + hh.h / 2;
-        d = Math.min(d, Math.hypot(wx - x, wy - y));
+        dHouse = Math.min(dHouse, Math.hypot(wx - x, wy - y));
       }
     }
-    if (d < bestD) { bestD = d; best = { x: x, y: y, d: d }; if (d < 45) break; }
+    var terrain = (t === T.FOREST ? 20 : (t === T.GRASS ? 15 : (t === T.RUBBLE ? 5 : 0)));
+    var score = (land / total) * 100 + Math.max(0, 80 - dHouse) + terrain;
+    if (score > bestScore) { bestScore = score; best = { x: x, y: y }; }
   }
   if (best) return best;
   /* 兜底：随机大陆 */
-  for (var i = 0; i < 2000; i++) {
+  for (var i = 0; i < 3000; i++) {
     var x = Math.floor(Math.random() * NUM.WORLD), y = Math.floor(Math.random() * NUM.WORLD);
-    if (W.walkable(x, y)) return { x: x, y: y };
+    if (W.walkable(x, y) && W.tileRaw(x, y) !== T.SAND) return { x: x, y: y };
   }
   return { x: 4000, y: 4000 };
 }
